@@ -14,14 +14,23 @@ class CanadaClimateScraper:
         }
         self.resp1 = requests.get(self.query1_url, params=self.query1_params)
         self.soup1 = BeautifulSoup(self.resp1.text, 'html.parser')
+        self.flag = True
         for item in self.soup1.find_all('tr'):
             if '*' in item.text:
                 self.location = item.find('a').text.title()
                 self.link = item.find('a')['href']
                 self.stnID = re.search(r'stnID=\d+', self.link).group()[6:]
                 self.prov = item.find('td', {'class': 'text-right'}).text.strip()
+                self.flag = False
                 break
         
+        if self.flag:
+            self.item = self.soup1.find_all('tr')[2]
+            self.location = self.item.find('a').text.title()
+            self.link = self.item.find('a')['href']
+            self.stnID = re.search(r'stnID=\d+', self.link).group()[6:]
+            self.prov = self.item.find('td', {'class': 'text-right'}).text.strip()
+
         self.query2_url = 'https://climate.weather.gc.ca/climate_normals/results_1981_2010_e.html?'
         self.query2_params = {
             'searchType': 'stnName',
@@ -55,35 +64,39 @@ class CanadaClimateScraper:
 
         self.res_resp = requests.get(self.final_url, params=self.final_params)
         self.res_soup = BeautifulSoup(self.res_resp.text, 'lxml')
-
+        
         res =  '{{Infobox Weather\n'
         res += '| location = {}（平均数据1981－2010年）\n'.format(city_zh)
         res += '| metric first = yes\n'
         res += '| single line = yes\n'
-        res += '| Jan record high C = {}\n'.format(self.res_soup.find('element', {'name': 'extr_max_temp_jan'})['value'])
-        res += '| Feb record high C = {}\n'.format(self.res_soup.find('element', {'name': 'extr_max_temp_feb'})['value'])
-        res += '| Mar record high C = {}\n'.format(self.res_soup.find('element', {'name': 'extr_max_temp_mar'})['value'])
-        res += '| Apr record high C = {}\n'.format(self.res_soup.find('element', {'name': 'extr_max_temp_apr'})['value'])
-        res += '| May record high C = {}\n'.format(self.res_soup.find('element', {'name': 'extr_max_temp_may'})['value'])
-        res += '| Jun record high C = {}\n'.format(self.res_soup.find('element', {'name': 'extr_max_temp_jun'})['value'])
-        res += '| Jul record high C = {}\n'.format(self.res_soup.find('element', {'name': 'extr_max_temp_jul'})['value'])
-        res += '| Aug record high C = {}\n'.format(self.res_soup.find('element', {'name': 'extr_max_temp_aug'})['value'])
-        res += '| Sep record high C = {}\n'.format(self.res_soup.find('element', {'name': 'extr_max_temp_sep'})['value'])
-        res += '| Oct record high C = {}\n'.format(self.res_soup.find('element', {'name': 'extr_max_temp_oct'})['value'])
-        res += '| Nov record high C = {}\n'.format(self.res_soup.find('element', {'name': 'extr_max_temp_nov'})['value'])
-        res += '| Dec record high C = {}\n'.format(self.res_soup.find('element', {'name': 'extr_max_temp_dec'})['value'])
-        res += '| Jan record low C = {}\n'.format(self.res_soup.find('element', {'name': 'extr_min_temp_jan'})['value'])
-        res += '| Feb record low C = {}\n'.format(self.res_soup.find('element', {'name': 'extr_min_temp_feb'})['value'])
-        res += '| Mar record low C = {}\n'.format(self.res_soup.find('element', {'name': 'extr_min_temp_mar'})['value'])
-        res += '| Apr record low C = {}\n'.format(self.res_soup.find('element', {'name': 'extr_min_temp_apr'})['value'])
-        res += '| May record low C = {}\n'.format(self.res_soup.find('element', {'name': 'extr_min_temp_may'})['value'])
-        res += '| Jun record low C = {}\n'.format(self.res_soup.find('element', {'name': 'extr_min_temp_jun'})['value'])
-        res += '| Jul record low C = {}\n'.format(self.res_soup.find('element', {'name': 'extr_min_temp_jul'})['value'])
-        res += '| Aug record low C = {}\n'.format(self.res_soup.find('element', {'name': 'extr_min_temp_aug'})['value'])
-        res += '| Sep record low C = {}\n'.format(self.res_soup.find('element', {'name': 'extr_min_temp_sep'})['value'])
-        res += '| Oct record low C = {}\n'.format(self.res_soup.find('element', {'name': 'extr_min_temp_oct'})['value'])
-        res += '| Nov record low C = {}\n'.format(self.res_soup.find('element', {'name': 'extr_min_temp_nov'})['value'])
-        res += '| Dec record low C = {}\n'.format(self.res_soup.find('element', {'name': 'extr_min_temp_dec'})['value'])
+        try:
+            res += '| Jan record high C = {}\n'.format(self.res_soup.find('element', {'name': 'extr_max_temp_jan'})['value'])
+            res += '| Feb record high C = {}\n'.format(self.res_soup.find('element', {'name': 'extr_max_temp_feb'})['value'])
+            res += '| Mar record high C = {}\n'.format(self.res_soup.find('element', {'name': 'extr_max_temp_mar'})['value'])
+            res += '| Apr record high C = {}\n'.format(self.res_soup.find('element', {'name': 'extr_max_temp_apr'})['value'])
+            res += '| May record high C = {}\n'.format(self.res_soup.find('element', {'name': 'extr_max_temp_may'})['value'])
+            res += '| Jun record high C = {}\n'.format(self.res_soup.find('element', {'name': 'extr_max_temp_jun'})['value'])
+            res += '| Jul record high C = {}\n'.format(self.res_soup.find('element', {'name': 'extr_max_temp_jul'})['value'])
+            res += '| Aug record high C = {}\n'.format(self.res_soup.find('element', {'name': 'extr_max_temp_aug'})['value'])
+            res += '| Sep record high C = {}\n'.format(self.res_soup.find('element', {'name': 'extr_max_temp_sep'})['value'])
+            res += '| Oct record high C = {}\n'.format(self.res_soup.find('element', {'name': 'extr_max_temp_oct'})['value'])
+            res += '| Nov record high C = {}\n'.format(self.res_soup.find('element', {'name': 'extr_max_temp_nov'})['value'])
+            res += '| Dec record high C = {}\n'.format(self.res_soup.find('element', {'name': 'extr_max_temp_dec'})['value'])
+            res += '| Jan record low C = {}\n'.format(self.res_soup.find('element', {'name': 'extr_min_temp_jan'})['value'])
+            res += '| Feb record low C = {}\n'.format(self.res_soup.find('element', {'name': 'extr_min_temp_feb'})['value'])
+            res += '| Mar record low C = {}\n'.format(self.res_soup.find('element', {'name': 'extr_min_temp_mar'})['value'])
+            res += '| Apr record low C = {}\n'.format(self.res_soup.find('element', {'name': 'extr_min_temp_apr'})['value'])
+            res += '| May record low C = {}\n'.format(self.res_soup.find('element', {'name': 'extr_min_temp_may'})['value'])
+            res += '| Jun record low C = {}\n'.format(self.res_soup.find('element', {'name': 'extr_min_temp_jun'})['value'])
+            res += '| Jul record low C = {}\n'.format(self.res_soup.find('element', {'name': 'extr_min_temp_jul'})['value'])
+            res += '| Aug record low C = {}\n'.format(self.res_soup.find('element', {'name': 'extr_min_temp_aug'})['value'])
+            res += '| Sep record low C = {}\n'.format(self.res_soup.find('element', {'name': 'extr_min_temp_sep'})['value'])
+            res += '| Oct record low C = {}\n'.format(self.res_soup.find('element', {'name': 'extr_min_temp_oct'})['value'])
+            res += '| Nov record low C = {}\n'.format(self.res_soup.find('element', {'name': 'extr_min_temp_nov'})['value'])
+            res += '| Dec record low C = {}\n'.format(self.res_soup.find('element', {'name': 'extr_min_temp_dec'})['value'])
+        except:
+            pass
+
         res += '| Jan high C = {}\n'.format(self.res_soup.find('element', {'name': 'max_temp_dly_jan'})['value'])
         res += '| Feb high C = {}\n'.format(self.res_soup.find('element', {'name': 'max_temp_dly_feb'})['value'])
         res += '| Mar high C = {}\n'.format(self.res_soup.find('element', {'name': 'max_temp_dly_mar'})['value'])

@@ -1,5 +1,5 @@
-import scrape_canada_weather
+import canada_climate_scraper
 
-scraper = scrape_canada_weather.ScrapeCanadaWeather()
+scraper = canada_climate_scraper.CanadaClimateScraper()
 
-scraper.scrape('Surrey', '素里')
+scraper.scrape('Burnaby', '本那比')
